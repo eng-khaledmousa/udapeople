@@ -158,7 +158,6 @@ jobs:
           name: Install dependencies
           command: |
             pip install awscli
-      - create-dotenv-file
       - run:
           name: Configure server
           command: |
