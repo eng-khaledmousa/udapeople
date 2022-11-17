@@ -266,7 +266,7 @@ jobs:
           fingerprints:
             - "dc:ac:58:10:4a:6e:39:2c:5c:9a:2d:36:79:80:14:b1"
       - attach_workspace:
-          at: ~/project/.circleci/ansible/inventory.txt
+          at: ~/
       - restore_cache:
           keys: [backend-build]
       - run:
@@ -280,9 +280,10 @@ jobs:
             cd backend
             npm install
             npm run build
-            tar -czf artifact.tar.gz dist/* package*
             cd ..
-            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            tar -C backend -czvf artifact.tar.gz .
+            mv artifact.tar.gz .circleci/ansible/roles/deploy/files/artifact.tar.gz
+            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> .circleci/ansible/inventory.txt
             cd .circleci/ansible
             echo "Contents  of the inventory.txt file is -------"
             cat inventory.txt
