@@ -1,16 +1,17 @@
 ---
 - name: "Create backend directory"
   file:
-    path: /backend
+    path: ~/backend
     state: directory
 
 - name: "Extract backend artifact"
   unarchive:
     src: artifact.tar.gz
-    dest: /backend
+    dest: ~/backend
 
 - name: "Deploy backend"
   shell: |
-    cd backend
+    cd ~/backend
     npm install
-    sudo pm2 start npm -- start
+    pm2 stop default
+    pm2 start npm -- start
