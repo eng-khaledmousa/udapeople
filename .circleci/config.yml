@@ -272,20 +272,20 @@ jobs:
       - run:
           name: Install dependencies
           command: |
-            cd backend
-            npm install
+            sudo apt update
+            sudo apt install ansible -y
       - run:
           name: Deploy backend
           command: |
             cd backend
+            npm install
             npm run build
-            tar -czf artifact.tar.gz dist/* package*
             cd ..
-            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+            tar -C backend -czvf artifact.tar.gz .
+            cp artifact.tar.gz .circleci/ansible/roles/deploy/files
+            aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text >> .circleci/ansible/inventory.txt
             cd .circleci/ansible
             cat inventory.txt
-            sudo apt update
-            sudo apt install ansible -y
             ansible-playbook -i inventory.txt deploy-backend.yml
       - destroy-environment
       - revert-migrations
