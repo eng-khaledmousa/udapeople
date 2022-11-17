@@ -6,8 +6,10 @@ commands:
     parameters:
       backend-stack:
         type: string
+        default: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       frontend-stack:
         type: string
+        default: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
     steps:
       - run:
           name: Destroy environments
@@ -15,6 +17,30 @@ commands:
           command: |
             aws cloudformation delete-stack --stack-name << parameters.backend-stack >>
             aws cloudformation delete-stack --stack-name << parameters.frontend-stack >>
+
+  revert-migrations:
+    description: Revert migrations
+    parameters:
+      Workflow_ID:
+        type: string
+        default: ${CIRCLE_WORKFLOW_ID:0:7}
+    steps:
+      - run:
+          name: Revert migrations
+          when: on_fail
+          command: |
+            cd backend
+            npm run migration:revert
+  
+  install-aws-cli:
+    description: Install aws-cli
+    steps:
+      - run:
+          name: Install aws-cli
+          command: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscli.zip"
+            unzip awscli.zip
+            sudo ./aws/install
 
 jobs:
   build-frontend:
@@ -137,9 +163,7 @@ jobs:
           root: ~/
           paths:
             - project/.circleci/ansible/inventory.txt
-      - destroy-environment:
-          backend-stack: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          frontend-stack: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment
   configure-infrastructure:
     docker:
       - image: python:3.7.11-alpine3.13
@@ -162,23 +186,22 @@ jobs:
       - run:
           name: Configure server
           command: |
-            export ANSIBLE_HOST_KEY_CHECKING=false
-            ansible-playbook -i ./.circleci/ansible/inventory.txt ./.circleci/ansible/configure-server.yml
-      - destroy-environment:
-          backend-stack: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          frontend-stack: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+            cd .circleci/ansible
+            cat inventory.txt
+            ansible-playbook -i inventory.txt configure-server.yml
+      - destroy-environment
   
   run-migrations:
     docker:
       - image: circleci/node:13.8.0
     steps:
       - checkout
+      - install-aws-cli
       - run:
           name: Run migrations
           command: |
             cd backend
             npm install
-            npm run build
             npm run migrations > migrations_dump.txt
             logFile=migrations_dump.txt
             if grep -q executed successfully "$logFile"
@@ -188,15 +211,14 @@ jobs:
               exit 1
             fi
       - run:
-          name: Send migration results to memstash
+          name: Send migration results to kvdb
           command: |
-            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            if grep -q "has been executed successfully" backend/migrations_dump.txt
             then
               curl https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
             fi
-      - destroy-environment:
-          backend-stack: udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
-          frontend-stack: udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
+      - destroy-environment
+      - revert-migrations
 
 workflows:
   default:
