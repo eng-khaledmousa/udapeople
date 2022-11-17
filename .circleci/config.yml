@@ -209,7 +209,7 @@ jobs:
             cd backend
             npm run migrations > migrations_dump.txt
             logFile=migrations_dump.txt
-            if grep -q executed successfully "$logFile"
+            if grep -q "executed successfully" "$logFile"
             then
               exit 0
             else
