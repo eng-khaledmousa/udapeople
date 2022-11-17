@@ -30,7 +30,7 @@ commands:
           when: on_fail
           command: |
             cd backend
-            npm run migration:revert
+            npm run migrations:revert
   
   install-aws-cli:
     description: Install aws-cli
@@ -197,11 +197,12 @@ jobs:
     steps:
       - checkout
       - install-aws-cli
+      - restore_cache:
+          keys: [backend-build]
       - run:
           name: Run migrations
           command: |
             cd backend
-            npm install
             npm run migrations > migrations_dump.txt
             logFile=migrations_dump.txt
             if grep -q executed successfully "$logFile"
