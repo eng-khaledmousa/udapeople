@@ -1,0 +1,18 @@
+---
+- name: "Create backend directory"
+  file:
+    path: backend
+    state: directory
+
+- name: "Extract backend artifact"
+  unarchive:
+    src: artifact.tar.gz
+    dest: backend
+
+- name: "Deploy backend"
+  shell: |
+    cd backend
+    npm install
+    cd dist
+    pm2 stop default
+    pm2 start npm -- start
