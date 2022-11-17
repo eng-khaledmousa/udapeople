@@ -29,8 +29,12 @@ commands:
           name: Revert migrations
           when: on_fail
           command: |
-            cd backend
-            npm run migrations:revert
+            is_migrated=$(curl --insecure  https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/migration_<< parameters.Workflow_ID >>)
+            if (($is_migrated==1))
+            then
+              cd backend
+              npm run migrations:revert
+            fi
   
   install-aws-cli:
     description: Install aws-cli
@@ -42,22 +46,6 @@ commands:
             unzip awscli.zip
             sudo ./aws/install
 
-  create-backend-env-file:
-    description: Create env file
-    steps:
-      - run:
-          name: Add env variables
-          command: |
-            cd backend
-            echo TYPEORM_CONNECTION=$TYPEORM_CONNECTION > ".env"
-            echo TYPEORM_MIGRATIONS_DIR=$TYPEORM_MIGRATIONS_DIR >> ".env"
-            echo TYPEORM_ENTITIES=$TYPEORM_ENTITIES >> ".env"
-            echo TYPEORM_MIGRATIONS=$TYPEORM_MIGRATIONS >> ".env"
-            echo TYPEORM_HOST=$TYPEORM_HOST >> ".env"
-            echo TYPEORM_PORT=$TYPEORM_PORT >> ".env"
-            echo TYPEORM_USERNAME=$TYPEORM_USERNAME >> ".env"
-            echo TYPEORM_PASSWORD=$TYPEORM_PASSWORD >> ".env"
-            echo TYPEORM_DATABASE=$TYPEORM_DATABASE >> ".env"
 jobs:
   build-frontend:
     docker:
@@ -215,7 +203,6 @@ jobs:
       - install-aws-cli
       - restore_cache:
           keys: [backend-build]
-      - create-backend-env-file
       - run:
           name: Run migrations
           command: |
@@ -233,7 +220,7 @@ jobs:
           command: |
             if grep -q "has been executed successfully" backend/migrations_dump.txt
             then
-              curl https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/migration_${CIRCLE_WORKFLOW_ID:0:7}  --insecure -d '1'
+              curl --insecure https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/migration_${CIRCLE_WORKFLOW_ID:0:7} -d '1'
             fi
       - destroy-environment
       - revert-migrations
