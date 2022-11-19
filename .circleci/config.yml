@@ -259,20 +259,22 @@ jobs:
   
   deploy-backend:
     docker:
-      - image: python:3.7.11-alpine3.13
+      - image: circleci/node:13.8.0
     steps:
       - checkout
+      - install-aws-cli
       - add_ssh_keys:
           fingerprints:
             - "dc:ac:58:10:4a:6e:39:2c:5c:9a:2d:36:79:80:14:b1"
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update --no-cache tar gzip nodejs npm ansible aws-cli
       - attach_workspace:
           at: ~/
       - restore_cache:
           keys: [backend-build]
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install ansible -y
       - run:
           name: Deploy backend
           command: |
@@ -288,8 +290,8 @@ jobs:
             cat inventory.txt
             export ANSIBLE_HOST_KEY_CHECKING=False
             ansible-playbook -i inventory.txt deploy-backend.yml
-      - destroy-environment
-      - revert-migrations
+      # - destroy-environment
+      # - revert-migrations
 
   smoke-test:
     docker:
