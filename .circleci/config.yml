@@ -54,7 +54,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Build front-end
           command: |
@@ -63,7 +64,7 @@ jobs:
             npm run build 
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build
+          key: frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
 
   build-backend:
     docker:
@@ -88,7 +89,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Test front-end
           command: |
@@ -114,7 +116,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Scan front-end
           command: |
@@ -234,7 +237,8 @@ jobs:
       - checkout
       - install-aws-cli
       - restore_cache:
-          keys: [frontend-build]
+          keys:
+            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Install dependencies
           command: |
