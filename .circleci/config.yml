@@ -55,7 +55,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
+            - frontend-build-{{ checksum "package-lock.json" }}
       - run:
           name: Build front-end
           command: |
@@ -64,7 +64,7 @@ jobs:
             npm run build 
       - save_cache:
           paths: [frontend/node_modules]
-          key: frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
+          key: frontend-build-{{ checksum "package-lock.json" }}
 
   build-backend:
     docker:
@@ -90,7 +90,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
+            - frontend-build-{{ checksum "package-lock.json" }}
       - run:
           name: Test front-end
           command: |
@@ -117,7 +117,7 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
+            - frontend-build-{{ checksum "package-lock.json" }}
       - run:
           name: Scan front-end
           command: |
@@ -177,15 +177,11 @@ jobs:
       - image: python:3.7.11-alpine3.13
     steps:
       - checkout
-      - attach_workspace:
-          at: .
       - add_ssh_keys:
           fingerprints:
             - "dc:ac:58:10:4a:6e:39:2c:5c:9a:2d:36:79:80:14:b1"
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - project/.circleci/ansible
+      - attach_workspace:
+          at: ~/
       - run:
           name: Install dependencies
           command: |
@@ -238,7 +234,7 @@ jobs:
       - install-aws-cli
       - restore_cache:
           keys:
-            - frontend-build-${CIRCLE_WORKFLOW_ID:0:7}
+            - frontend-build-{{ checksum "package-lock.json" }}
       - run:
           name: Install dependencies
           command: |
