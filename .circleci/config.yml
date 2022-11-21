@@ -185,10 +185,11 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - install-aws-cli
       - install-ansible
       - add_ssh_keys:
           fingerprints:
-            - "d8:60:32:3f:55:bc:65:a0:00:4a:9a:dc:3c:20:66:9b"
+            - "22:15:13:62:36:6b:fc:42:92:cf:2a:8e:41:65:65:76:62:68:d1:38"
       - attach_workspace:
           at: ~/
       - run:
