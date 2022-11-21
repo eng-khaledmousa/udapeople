@@ -47,6 +47,14 @@ commands:
             unzip awscli.zip
             sudo ./aws/install
 
+  install-ansible:
+    description: Install Ansible
+    steps:
+      - run:
+          name: Install Ansible
+          command: |
+            sudo apt update
+            sudo apt install ansible -y
 jobs:
   build-frontend:
     docker:
@@ -174,19 +182,15 @@ jobs:
 
   configure-infrastructure:
     docker:
-      - image: python:3.7-alpine3.11
+      - image: cimg/base:stable
     steps:
       - checkout
+      - install-ansible
       - add_ssh_keys:
           fingerprints:
             - "d8:60:32:3f:55:bc:65:a0:00:4a:9a:dc:3c:20:66:9b"
       - attach_workspace:
           at: ~/
-      - run:
-          name: Install dependencies
-          command: |
-            apk add --update ansible
-            pip install awscli
       - run:
           name: Configure server
           command: |
