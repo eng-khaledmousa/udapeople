@@ -271,7 +271,7 @@ jobs:
       - install-aws-cli
       - add_ssh_keys:
           fingerprints:
-            - "d8:60:32:3f:55:bc:65:a0:00:4a:9a:dc:3c:20:66:9b"
+            - "19:95:ef:54:76:0e:7d:a3:0a:4c:72:bf:ec:13:44:3b"
       - attach_workspace:
           at: ~/
       - restore_cache:
