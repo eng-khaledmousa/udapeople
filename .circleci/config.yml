@@ -306,7 +306,7 @@ jobs:
       - run:
           name: Wait 1 minute
           command: |
-            sleep 60000
+            sleep 60
 
   smoke-test:
     docker:
