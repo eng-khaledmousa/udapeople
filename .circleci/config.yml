@@ -299,6 +299,15 @@ jobs:
       - destroy-environment
       - revert-migrations
 
+  wait-for-awhile:
+    docker:
+      - image: circleci/node:13.8.0
+    steps:
+      - run:
+          name: Wait 1 minute
+          command: |
+            sleep 60000
+
   smoke-test:
     docker:
       - image: circleci/node:13.8.0
@@ -411,8 +420,10 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-      - smoke-test:
+      - wait-for-awhile:
           requires: [deploy-backend, deploy-frontend]
+      - smoke-test:
+          requires: [wait-for-awhile]
       - cloudfront-update:
           requires: [smoke-test]
       - cleanup: 
