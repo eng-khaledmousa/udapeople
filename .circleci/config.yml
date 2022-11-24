@@ -374,6 +374,10 @@ jobs:
           name: Remove old stacks and files
           command: |
             echo OldWorkflowID: "${OldWorkflowID}"
+            if [[ "${OldWorkflowID}" == "Not Found" ]]
+            then
+              OldWorkflowID="${CIRCLE_WORKFLOW_ID:0:7}"
+            fi
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               BUCKET_ID="udapeople-${OldWorkflowID}"
