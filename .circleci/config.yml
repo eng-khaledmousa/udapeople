@@ -348,14 +348,6 @@ jobs:
           command: |
             yum install -y tar gzip
       - run:
-          name: Save OldWorkflowID
-          command: |
-            export OldWorkflowID=$(aws cloudformation \
-              list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
-              --no-paginate --output text)
-            echo "Old Wokflow ID: $OldWorkflowID"
-            curl https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/OldWorkflowID -d "${OldWorkflowID}"
-      - run:
           name: Update cloudfront distribution
           command: |
             aws cloudformation deploy \
@@ -366,36 +358,34 @@ jobs:
       - destroy-environment
       - revert-migrations
 
-
   cleanup:
     docker:
-      - image: cimg/base:stable
+      - image: amazon/aws-cli
     steps:
       - checkout
-      - install-aws-cli
+      - run:
+          name: Get old stack workflow id
+          command: |
+            export OldWorkflowID=$(curl --insecure  https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/OldWorkflowID)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+            echo OldWorkflowID="${OldWorkflowID}" >> $BASH_ENV
       - run:
           name: Remove old stacks and files
           command: |
-            export STACKS=($(aws cloudformation list-stacks \
-              --query "StackSummaries[*].StackName" \
-              --stack-status-filter CREATE_COMPLETE --no-paginate --output text)) 
-            echo Stack names: "${STACKS[@]}"
-            export OldWorkflowID=$(curl --insecure https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/OldWorkflowID)
             echo OldWorkflowID: "${OldWorkflowID}"
-            if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
+            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
             then
               BUCKET_ID="udapeople-${OldWorkflowID}"
               echo "BUCKET_ID: $BUCKET_ID"
-              aws s3 ls
-              aws iam list-access-keys --user-name udapeople
-              aws s3 rm "s3://udapeople-6cf348c" --recursive
+              aws s3 rm "s3://udapeople-${BUCKET_ID}" --recursive
               aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
               aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
-              echo "Cleaned successfully"
+              echo "Clean up success"
             else
               echo "Nothing to cleanup"
             fi
-
+            curl --insecure https://kvdb.io/8BXgwLGhRVKVJQ5SWSQ9V1/OldWorkflowID -d ${CIRCLE_WORKFLOW_ID:0:7}
 
 workflows:
   default:
@@ -435,4 +425,3 @@ workflows:
           requires: [smoke-test]
       - cleanup: 
           requires: [cloudfront-update]
-
