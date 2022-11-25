@@ -25,8 +25,8 @@ Resources:
         - Sid: PublicReadForGetBucketObjects
           Effect: Allow
           Principal: '*'
-          Action: ['s3:GetObject', 's3:DeleteObject']
-          Resource: ['*']
+          Action: ['s3:*']
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket', /*]]
 
 Outputs:
   WebsiteURL:
