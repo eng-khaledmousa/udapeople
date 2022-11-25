@@ -359,7 +359,7 @@ jobs:
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
-            - /tmp/workspace/env
+            - env
       - run:
           name: Update cloudfront distribution
           command: |
@@ -381,6 +381,7 @@ jobs:
       - run:
           name: Remove old stacks and files
           command: |
+            source /tmp/workspace/env
             OldWorkflowID="$OldWorkflowID"
             echo ${OldWorkflowID}
             if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
