@@ -355,7 +355,7 @@ jobs:
                       --no-paginate --output text)
             echo "OldWokflowID: $OldWorkflowID"
             mkdir -p /tmp/workspace
-            echo "export OldWorkflowID=\"$OldWorkflowID\"" >> /tmp/workspace/env
+            echo "export OldWorkflowID=72975e8" >> /tmp/workspace/env
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
