@@ -368,9 +368,10 @@ jobs:
 
   cleanup:
     docker:
-      - image: amazon/aws-cli
+      - image: cimg/base:stable
     steps:
       - checkout
+      - install-aws-cli
       - run:
           name: Remove old stacks and files
           command: |
