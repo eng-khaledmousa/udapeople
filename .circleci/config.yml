@@ -360,6 +360,7 @@ jobs:
               echo "export OldWorkflowID=\"${CIRCLE_WORKFLOW_ID:0:7}\"" > /tmp/workspace/env
             else  
               echo "export OldWorkflowID=\"$OldWorkflowID\"" > /tmp/workspace/env
+            fi
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
